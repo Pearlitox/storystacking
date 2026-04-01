@@ -1,21 +1,17 @@
 import * as THREE from "https://unpkg.com/three@latest/build/three.module.js";
 import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js";
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// SETTINGS
 const settings = {
     wrapper: document.querySelector(".js-canvas-wrapper"),
     canvas: document.querySelector(".js-canvas-3d"),
     raf: window.requestAnimationFrame,
-    glb: "../assets/Ampoule_Test.glb",
     sizes: {},
-    raycaster: new THREE.Raycaster(),
-    mousePointer: new THREE.Vector2()
 };
 
 const threejsOptions = {
     canvas: settings.canvas,
 };
-
-const values = {};
 
 //// VIEWER CLASS
 
@@ -30,18 +26,12 @@ class Viewer {
         // Tout les éléments à ajouter dans la scene
 
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const sphere = new THREE.SphereGeometry(15, 32, 16);
         const material = new THREE.MeshBasicMaterial({
             color: "slateblue",
         });
-        const material1 = new THREE.MeshBasicMaterial({
-            color: "gold",
-        });
         const mesh = new THREE.Mesh(geometry, material);
-        const mesh1 = new THREE.Mesh(sphere, material1);
-        console.log(mesh1)
-        mesh1.position.z = 5
-        this.scene.add(mesh, mesh1);
+        this.scene.add(mesh);
+
         // Demander un rendu
         this.render();
     }
@@ -114,32 +104,6 @@ class Viewer {
     }
 }
 
-const raycasting = () => {
-    settings.raycaster.setFromCamera(
-        settings.mousePointer, myViewer.camera);
-    const intersects = settings.raycaster.intersectObjects(
-        myViewer.scene.children );
-        myViewer.scene.children.forEach(item => {
-            item.scale.set(1, 1, 1);
-        })
-
-        for (const child of intersects ){
-            console.log(child.object);
-            child.object.scale.set(2,2,2)
-             
-        }
-        myViewer.render();
-};
-
-const updateMousePointer = (e) => {
-    const x = (e.clientX / settings.sizes.w) * 2 - 1;
-    const y = (e.clientY / settings.sizes.h) * 2 - 1;
-    settings.mousePointer.x = x;
-    settings.mousePointer.y = -y;
-  
-    raycasting();
-}
-
 const myViewer = new Viewer(threejsOptions);
 // myViewer.addGizmo(2);
 
@@ -148,6 +112,3 @@ const myViewer = new Viewer(threejsOptions);
 window.addEventListener("resize", () => {
     myViewer.resize();
 });
-window.addEventListener('mousemove', (e) => {
-    updateMousePointer(e);
-  });
