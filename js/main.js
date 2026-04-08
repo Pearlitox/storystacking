@@ -81,7 +81,7 @@ class Viewer {
 
     populate() {
         // Tout les éléments à ajouter dans la scene
-        
+        this.clickable= [];
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshBasicMaterial({
             color: "slateblue",
@@ -89,9 +89,18 @@ class Viewer {
         const mesh = new THREE.Mesh(geometry, material);
 
         this.scene.add( gltf.scene );
+        
         const suzanne = this.scene.getObjectByName('Suzanne');
+        const suzanne1 = this.scene.getObjectByName('Suzanne001');
+        const suzanne2 = this.scene.getObjectByName('Suzanne002');
+        const cube = this.scene.getObjectByName('Cube');
+        cube.material = new THREE.MeshBasicMaterial({color : 'white'})
         suzanne.material = new THREE.MeshBasicMaterial({color : 'springGreen'});
-        this.scene.add(mesh);
+        suzanne1.material = new THREE.MeshBasicMaterial({color : 'blue'});
+        suzanne2.material = new THREE.MeshBasicMaterial({color : 'gold'});
+
+        this.clickable.push(suzanne, suzanne1, suzanne2);
+        console.log(this.clickable)
 
         // Demander un rendu
         this.render();
@@ -170,11 +179,28 @@ const raycasting = () => {
     settings.raycaster.setFromCamera( settings.mousePointer, myViewer.camera);
     const intersects = settings.raycaster.intersectObjects(myViewer.scene.children);
 
-    
-    for (const child of intersects ){
-        console.log(child.object);
-        child.object.scale.set(2,2,2);
+    if( intersects.length > 0 ){
+        const firstObjectTouch = intersects[0].object.name;
+
+        for( const obj of myViewer.clickable ){
+            if( obj.name !== firstObjectTouch ){
+                obj.scale.set(1,1,1);
+            } else{
+                obj.scale.set(1.1,1.1,1.1);
+            }
+        }
+    } else {
+        for( const obj of myViewer.clickable ){
+            obj.scale.set(1,1,1);
+        }
     }
+    /*
+    for (const child of intersects ){
+        
+        child.object.scale.set(1.1,1.1,1.1);
+    }
+    */
+
     myViewer.render();
 }
 
