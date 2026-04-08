@@ -87,7 +87,10 @@ class Viewer {
             color: "slateblue",
         });
         const mesh = new THREE.Mesh(geometry, material);
+
         this.scene.add( gltf.scene );
+        const suzanne = this.scene.getObjectByName('Suzanne');
+        suzanne.material = new THREE.MeshBasicMaterial({color : 'springGreen'});
         this.scene.add(mesh);
 
         // Demander un rendu
