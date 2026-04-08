@@ -2,6 +2,7 @@ import * as THREE from "https://unpkg.com/three@latest/build/three.module.js";
 import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js";
 import { OrbitControls } from 'https://esm.sh/three/addons/controls/OrbitControls.js';
 import gsap from "https://esm.sh/gsap";
+import { GLTFLoader } from 'https://esm.sh/three/addons/loaders/GLTFLoader.js';
 
 // SETTINGS
 const settings = {
@@ -10,12 +11,19 @@ const settings = {
     raf: window.requestAnimationFrame,
     sizes: {},
     raycaster: new THREE.Raycaster(),
-    mousePointer: new THREE.Vector2()
+    mousePointer: new THREE.Vector2(),
+    glb: "../assets/scene.glb"
 };
 
 const threejsOptions = {
     canvas: settings.canvas,
 };
+//LOADERS
+
+const loader = new GLTFLoader();
+const gltf = await loader.loadAsync(settings.glb);
+console.log(settings.glb);
+
 
 //// VIEWER CLASS
 
@@ -73,12 +81,13 @@ class Viewer {
 
     populate() {
         // Tout les éléments à ajouter dans la scene
-
+        
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshBasicMaterial({
             color: "slateblue",
         });
         const mesh = new THREE.Mesh(geometry, material);
+        this.scene.add( gltf.scene );
         this.scene.add(mesh);
 
         // Demander un rendu
