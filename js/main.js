@@ -1,5 +1,7 @@
 import * as THREE from "https://unpkg.com/three@latest/build/three.module.js";
 import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js";
+import { OrbitControls } from 'https://esm.sh/three/addons/controls/OrbitControls.js';
+import gsap from "https://esm.sh/gsap";
 
 // SETTINGS
 const settings = {
@@ -7,6 +9,8 @@ const settings = {
     canvas: document.querySelector(".js-canvas-3d"),
     raf: window.requestAnimationFrame,
     sizes: {},
+    raycaster: new THREE.Raycaster(),
+    mousePointer: new THREE.Vector2()
 };
 
 const threejsOptions = {
@@ -21,6 +25,51 @@ class Viewer {
 
         this.setRenderer(options);
     }
+
+    updateCameraPosition() {
+        const newPosition = this.cameraPositions[ this.indexCamera ];
+        this.camera.position.set( newPosition.x, newPosition.y, newPosition.z );
+        this.camera.lookAt(0,0,0);
+    }
+
+    travelling() {
+
+        this.indexCamera = 0;
+        this.cameraPositions = [];
+
+        const geometry = new THREE.BoxGeometry( .25,.25,.25);
+        const material = new THREE.MeshBasicMaterial({
+            color: 'crimson'
+        });
+
+
+        const cube1 = new THREE.Mesh( geometry, material );
+        cube1.position.x = 3;
+        cube1.position.z = 4;
+        cube1.position.y = 3;
+        cube1.visible = false;
+
+        const cube2 = new THREE.Mesh( geometry, material );
+
+        cube2.position.x = -3;
+        cube2.position.z = 2;
+        cube2.position.y = 1;
+        cube2.visible = false;
+
+        const cube3 = new THREE.Mesh( geometry, material );
+
+        cube3.position.x = 3;
+        cube3.position.z = -2;
+        cube3.position.y = 2;
+        cube3.visible = false;
+
+        this.cameraPositions.push(cube1.position, cube2.position, cube3.position);
+        
+        this.scene.add( cube1, cube2, cube3 );
+        this.updateCameraPosition();
+        this.render();
+    }
+
 
     populate() {
         // Tout les éléments à ajouter dans la scene
@@ -58,7 +107,7 @@ class Viewer {
 
         // Crée notre caméra
         // PerspectiveCamera( fov, aspect-ratio, near, far )
-        this.camera = new THREE.PerspectiveCamera(
+         this.camera = new THREE.PerspectiveCamera(
             75,
             // On le calcule avec la taille du wrapper
             settings.sizes.w / settings.sizes.h,
@@ -77,6 +126,7 @@ class Viewer {
         this.resize();
 
         // Appele la fonction d'ajout d'éléments
+        this.travelling();
         this.populate();
     }
 
@@ -104,6 +154,28 @@ class Viewer {
     }
 }
 
+const raycasting = () => {
+    settings.raycaster.setFromCamera( settings.mousePointer, myViewer.camera);
+    const intersects = settings.raycaster.intersectObjects(myViewer.scene.children);
+
+    
+    for (const child of intersects ){
+        console.log(child.object);
+        child.object.scale.set(2,2,2);
+    }
+    myViewer.render();
+}
+
+
+const updateMousePointer = (e) => {
+    const x = (e.clientX / settings.sizes.w) * 2 - 1;
+    const y = (e.clientY / settings.sizes.h) * 2 - 1;
+    settings.mousePointer.x = x;
+    settings.mousePointer.y = -y;
+
+    raycasting();
+}
+
 const myViewer = new Viewer(threejsOptions);
 // myViewer.addGizmo(2);
 
@@ -111,4 +183,26 @@ const myViewer = new Viewer(threejsOptions);
 // gère les changements de tailles
 window.addEventListener("resize", () => {
     myViewer.resize();
+});
+
+window.addEventListener('mousemove', (e) => {
+    updateMousePointer(e);
+});
+
+window.addEventListener("click", () => {
+    myViewer.indexCamera++;
+    const length = myViewer.cameraPositions.length;
+    gsap.to( myViewer.camera.position, {
+        duration: 1,
+        x: myViewer.cameraPositions[ myViewer.indexCamera % length ].x,
+        y: myViewer.cameraPositions[ myViewer.indexCamera % length ].y,
+        z: myViewer.cameraPositions[ myViewer.indexCamera % length ].z,
+        onUpdate: () => {
+            myViewer.camera.lookAt(0,0,0);
+            myViewer.render();
+        }
+    });
+    // myViewer.camera.position.set( myViewer.cube2.position.x, myViewer.cube2.position.y, myViewer.cube2.position.z );
+    // myViewer.camera.lookAt(0,0,0);
+    // myViewer.render();
 });
